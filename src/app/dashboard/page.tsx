@@ -16,7 +16,7 @@ function NewBoardModal({ onClose, onCreated, token }: { onClose: () => void; onC
   const handleCreate = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}/api/boards", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: title || "Untitled Board", type }),
       });
@@ -139,7 +139,7 @@ export default function DashboardPage() {
 
   const fetchBoards = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}/api/boards", { headers: { Authorization: `Bearer ${user!.token}` } });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards`, { headers: { Authorization: `Bearer ${user!.token}` } });
       setBoards(await res.json());
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };

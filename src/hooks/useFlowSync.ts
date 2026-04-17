@@ -17,7 +17,7 @@ export function useFlowSync(boardId: string, userName: string, enabled: boolean)
   useEffect(() => {
     if (!enabled || !boardId) return;
 
-    socket = io(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}", { transports: ["websocket"] });
+    socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", { transports: ["websocket"] });
 
     socket.on("connect", () => {
       // Joining the board room registers this user in the collaborators list

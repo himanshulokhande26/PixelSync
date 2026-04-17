@@ -18,7 +18,7 @@ export function useSocket(boardId: string, userName: string) {
   useEffect(() => {
     if (!userName || !boardId) return;
 
-    socket = io(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}", { transports: ["websocket"] });
+    socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", { transports: ["websocket"] });
 
     // ── Join ────────────────────────────────────────────────────────
     socket.on("connect", () => {
