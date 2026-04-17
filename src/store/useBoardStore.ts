@@ -99,19 +99,42 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const { elements } = get();
     const copied = elements.filter((el) => ids.includes(el.id));
     set({ clipboard: copied });
+    try { localStorage.setItem("pixelsync_clipboard", JSON.stringify(copied)); } catch (e) {}
   },
 
   pasteElements: () => {
-    const { clipboard, elements } = get();
-    if (!clipboard.length) return [];
-    const newEls: Element[] = clipboard.map((el) => ({
+    let cb = get().clipboard;
+    if (!cb || cb.length === 0) {
+      try {
+        const stored = localStorage.getItem("pixelsync_clipboard");
+        if (stored) cb = JSON.parse(stored);
+      } catch (e) {}
+    }
+    if (!cb || cb.length === 0) return [];
+    
+    const newEls: Element[] = cb.map((el) => ({
       ...el,
       id: crypto.randomUUID(),
       x: (el.x || 0) + 20,
       y: (el.y || 0) + 20,
       points: el.points?.map((p) => ({ ...p, x: p.x + 20, y: p.y + 20 })),
     }));
-    set({ elements: [...elements, ...newEls], selectedElementIds: newEls.map((e) => e.id) });
+    
+    // Save back to clipboard to allow multiple pastes moving down 20px each time
+    const updatedCb = cb.map((el) => ({
+      ...el,
+      x: (el.x || 0) + 20,
+      y: (el.y || 0) + 20,
+      points: el.points?.map((p) => ({ ...p, x: p.x + 20, y: p.y + 20 })),
+    }));
+    
+    set({ 
+      clipboard: updatedCb,
+      elements: [...get().elements, ...newEls], 
+      selectedElementIds: newEls.map((e) => e.id) 
+    });
+    try { localStorage.setItem("pixelsync_clipboard", JSON.stringify(updatedCb)); } catch (e) {}
+    
     get().saveHistory();
     return newEls;
   },

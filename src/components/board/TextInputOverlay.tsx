@@ -156,10 +156,11 @@ export function TextInputOverlay({ elementId, onUpdate, onClose }: TextInputOver
           minHeight: `${(element.fontSize || 16) * camera.scale * 1.5}px`,
           caretColor: element.textColor || element.color || "#8b5cf6",
           ...(isStandaloneText ? {
-            background: "rgba(124,58,237,0.05)",
-            border: "1px dashed rgba(124,58,237,0.4)",
+            background: "rgba(124,58,237,0.1)",
+            border: "2px solid #8b5cf6",
             padding: "6px 10px",
             borderRadius: "4px",
+            boxShadow: "0 0 0 2px rgba(124,58,237,0.2)",
           } : {})
         }}
       />

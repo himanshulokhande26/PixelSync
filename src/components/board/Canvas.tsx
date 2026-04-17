@@ -119,6 +119,8 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
 
   const lastClickRef = useRef<{ time: number; x: number; y: number }>({ time: 0, x: 0, y: 0 });
+  const lastCenter = useRef<{x: number, y: number} | null>(null);
+  const lastDist = useRef<number>(0);
 
   const transformerRef = useRef<any>(null);
   const stageRef = useRef<any>(null);
@@ -147,8 +149,20 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
         store.redo();
         return;
       }
-      // Copy — always read from store so we never have a stale closure
-      if (isMod && e.key === "c") {
+      const key = e.key.toLowerCase();
+      // Cut (Ctrl+X)
+      if (isMod && key === "x") {
+        const ids = useBoardStore.getState().selectedElementIds;
+        if (ids.length > 0) {
+          e.preventDefault();
+          useBoardStore.getState().copyElements(ids);
+          emitDeleteElements(ids);
+          deleteElements(ids);
+        }
+        return;
+      }
+      // Copy (Ctrl+C)
+      if (isMod && key === "c") {
         const ids = useBoardStore.getState().selectedElementIds;
         if (ids.length > 0) {
           e.preventDefault();
@@ -156,11 +170,22 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
         }
         return;
       }
-      // Paste
-      if (isMod && e.key === "v") {
+      // Paste (Ctrl+V)
+      if (isMod && key === "v") {
         e.preventDefault();
         const newEls = useBoardStore.getState().pasteElements();
         newEls.forEach((el) => emitDrawElement(el));
+        return;
+      }
+      // Duplicate (Ctrl+D)
+      if (isMod && key === "d") {
+        const ids = useBoardStore.getState().selectedElementIds;
+        if (ids.length > 0) {
+          e.preventDefault();
+          useBoardStore.getState().copyElements(ids);
+          const newEls = useBoardStore.getState().pasteElements();
+          newEls.forEach((el) => emitDrawElement(el));
+        }
         return;
       }
 
@@ -217,6 +242,62 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
     }
   }, [camera, setCamera]);
 
+  const handleTouchMove = useCallback((e: any) => {
+    e.evt.preventDefault();
+    const touch1 = e.evt.touches[0];
+    const touch2 = e.evt.touches[1];
+
+    if (touch1 && touch2) {
+      const stage = e.target.getStage();
+      if (!stage) return;
+      if (stage.isDragging()) stage.stopDrag();
+
+      const p1 = { x: touch1.clientX, y: touch1.clientY };
+      const p2 = { x: touch2.clientX, y: touch2.clientY };
+
+      const getCenter = (p1: any, p2: any) => ({ x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 });
+      const getDistance = (p1: any, p2: any) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+
+      if (!lastCenter.current) {
+        lastCenter.current = getCenter(p1, p2);
+        return;
+      }
+
+      const newCenter = getCenter(p1, p2);
+      const dist = getDistance(p1, p2);
+
+      if (!lastDist.current) lastDist.current = dist;
+
+      // Calculate new scale
+      const pointTo = {
+        x: (newCenter.x - stage.x()) / stage.scaleX(),
+        y: (newCenter.y - stage.y()) / stage.scaleX(),
+      };
+
+      const scale = stage.scaleX() * (dist / lastDist.current);
+      const newScale = Math.max(0.1, Math.min(scale, 5));
+
+      // Calculate panning offsets
+      const dx = newCenter.x - lastCenter.current.x;
+      const dy = newCenter.y - lastCenter.current.y;
+
+      const newPos = {
+        x: newCenter.x - pointTo.x * newScale + dx,
+        y: newCenter.y - pointTo.y * newScale + dy,
+      };
+
+      setCamera({ x: newPos.x, y: newPos.y, scale: newScale });
+
+      lastDist.current = dist;
+      lastCenter.current = newCenter;
+    }
+  }, [setCamera]);
+
+  const handleTouchEnd = useCallback(() => {
+    lastDist.current = 0;
+    lastCenter.current = null;
+  }, []);
+
   const getElementUnderPointer = (x: number, y: number) => {
     return [...elements].reverse().find(el => {
       const elX = el.x || 0, elY = el.y || 0;
@@ -232,6 +313,7 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   };
 
   const handlePointerDown = (e: any) => {
+    if (e.evt.button !== 0) return; // Only allow left clicks
     if (tool === "pan" || editingTextId) return;
     const stage = e.target.getStage();
     const pos = stage.getRelativePointerPosition();
@@ -444,7 +526,7 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
       }
     },
     onDblClick: () => {
-      if (["rectangle", "circle", "diamond", "text", "oval"].includes(el.type)) {
+      if (["rectangle", "circle", "diamond", "text", "oval", "triangle", "hexagon", "star"].includes(el.type)) {
         setEditingTextId(el.id);
       }
       if (el.type === "arrow") {
@@ -481,6 +563,8 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
         scaleX={camera.scale}
         scaleY={camera.scale}
         onWheel={handleWheel}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -647,30 +731,7 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
             return null;
           })}
 
-          {/* Render Connection Handles for purely selected shape */}
-          {selectedElementIds.length === 1 && !isDrawing && tool === "select" && (() => {
-            const el = elements.find(e => e.id === selectedElementIds[0]);
-            if (!el || !['rectangle', 'circle', 'diamond', 'oval'].includes(el.type)) return null;
-            const w = el.width || 0, h = el.height || 0;
-            const cx = (el.type === "circle" || el.type === "oval") ? (el.x || 0) : (el.x || 0) + w / 2;
-            const cy = (el.type === "circle" || el.type === "oval") ? (el.y || 0) : (el.y || 0) + h / 2;
-            const radius = 6;
-            
-            const coords = [
-              { h: "top",    x: cx, y: (el.type === "circle" || el.type === "oval" ? cy - h/2 - 10 : (el.y || 0) - 16) },
-              { h: "bottom", x: cx, y: (el.type === "circle" || el.type === "oval" ? cy + h/2 + 10 : (el.y || 0) + h + 16) },
-              { h: "left",   x: (el.type === "circle" || el.type === "oval" ? cx - w/2 - 10 : (el.x || 0) - 16), y: cy },
-              { h: "right",  x: (el.type === "circle" || el.type === "oval" ? cx + w/2 + 10 : (el.x || 0) + w + 16), y: cy },
-            ];
-
-            return (
-              <Group>
-                {coords.map(c => (
-                  <Circle key={c.h} x={c.x} y={c.y} radius={radius} fill="#3b82f6" stroke="#fff" strokeWidth={1.5} onPointerDown={(e) => startNodeArrow(e, el.id, c.h as any)} onMouseEnter={e => e.target.scale({x:1.3, y:1.3})} onMouseLeave={e => e.target.scale({x:1, y:1})} />
-                ))}
-              </Group>
-            );
-          })()}
+          {/* Connection Handles have been removed from the freeform canvas as requested */}
 
           {/* Selection Drag Box */}
           {selectionBox.visible && <Rect x={selectionBox.x} y={selectionBox.y} width={selectionBox.width} height={selectionBox.height} fill="rgba(124, 58, 237, 0.1)" stroke="#7c3aed" strokeWidth={1} dash={[4, 4]} />}
