@@ -252,7 +252,7 @@ export default function BoardPage({ params }: { params: Promise<{ boardId: strin
           </div>
 
           {/* Bottom badge */}
-          <div className="absolute bottom-4 sm:bottom-5 left-3 sm:left-5 z-50 px-2.5 py-1.5 bg-white/80 dark:bg-black/70 border border-black/8 dark:border-white/8 text-[10px] font-mono text-slate-400 flex items-center gap-1.5 shadow-sm select-none">
+          <div className="absolute bottom-4 sm:bottom-5 left-3 sm:left-5 z-50 px-2.5 py-1.5 bg-white/80 dark:bg-black/70 border border-black/8 dark:border-white/8 text-[10px] font-mono text-slate-400 hidden sm:flex items-center gap-1.5 shadow-sm select-none">
             <span className="text-violet-500">Mode:</span>
             {boardType === "flowchart" ? "Flowchart" : "Canvas"}{isDemoBoard && " · Demo"}
           </div>

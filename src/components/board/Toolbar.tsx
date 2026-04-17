@@ -118,7 +118,7 @@ function ShapesPopover({ activeTool, onSelect }: { activeTool: Tool; onSelect: (
       <button
         onClick={() => setOpen((o) => !o)}
         title="Shapes [S]"
-        className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-all duration-150 ${
+        className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 ${
           isActive
             ? "bg-violet-500/15 border border-violet-500 text-violet-600 dark:text-violet-400 shadow-[inset_0_0_10px_rgba(124,58,237,0.15)]"
             : "border border-transparent text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200"
@@ -128,13 +128,13 @@ function ShapesPopover({ activeTool, onSelect }: { activeTool: Tool; onSelect: (
       </button>
 
       {/* Tooltip */}
-      <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-slate-900 dark:bg-black border border-white/10 text-violet-300 font-mono text-[10px] font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg hidden sm:block z-50">
+      <div className="pointer-events-none absolute bottom-full -right-4 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mb-3 px-2 py-1 bg-slate-900 dark:bg-black border border-white/10 text-violet-300 font-mono text-[10px] font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg hidden sm:block z-50">
         Shapes <span className="text-slate-500 ml-1">[S]</span>
       </div>
 
       {/* Popover grid */}
       {open && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 origin-bottom" style={{ minWidth: 280 }}>
+        <div className="absolute bottom-full right-0 sm:auto sm:left-1/2 sm:-translate-x-1/2 mb-3 bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 origin-bottom sm:origin-bottom-center" style={{ minWidth: 260 }}>
           <div className="px-3 pt-3 pb-1">
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Shapes</p>
           </div>
@@ -274,7 +274,7 @@ export function Toolbar({ boardType = "canvas" }: { boardType?: "canvas" | "flow
               <div className="group relative">
                 <button onClick={() => setTool(t.id)}
                   title={`${t.label} [${t.shortcut}]`}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-all duration-150 ${
+                  className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 rounded-sm ${
                     tool === t.id
                       ? "bg-violet-500/15 border border-violet-500 text-violet-600 dark:text-violet-400 shadow-[inset_0_0_10px_rgba(124,58,237,0.15)]"
                       : "border border-transparent text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200"
