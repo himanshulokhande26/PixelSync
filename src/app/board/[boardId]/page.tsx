@@ -151,7 +151,7 @@ export default function BoardPage({ params }: { params: Promise<{ boardId: strin
 
   useEffect(() => {
     if (!hasJoined || isDemoBoard) return;
-    fetch(`http://localhost:5000/api/boards/content/${boardId}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards/content/${boardId}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.elements?.length > 0) setElements(data.elements);
@@ -177,7 +177,7 @@ export default function BoardPage({ params }: { params: Promise<{ boardId: strin
     if (isDemoBoard) return;
     setSaveState("saving");
     try {
-      await fetch(`http://localhost:5000/api/boards/content/${boardId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards/content/${boardId}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           boardType === "flowchart"

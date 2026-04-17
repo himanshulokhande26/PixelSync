@@ -16,7 +16,7 @@ function NewBoardModal({ onClose, onCreated, token }: { onClose: () => void; onC
   const handleCreate = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/boards", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}/api/boards", {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: title || "Untitled Board", type }),
       });
@@ -83,7 +83,7 @@ function BoardTitle({ board, token, onRenamed }: { board: Board; token: string; 
     setValue(trimmed);
     if (trimmed === board.title) return;
     try {
-      await fetch(`http://localhost:5000/api/boards/${board._id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards/${board._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: trimmed }),
@@ -139,14 +139,14 @@ export default function DashboardPage() {
 
   const fetchBoards = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/boards", { headers: { Authorization: `Bearer ${user!.token}` } });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}"}/api/boards", { headers: { Authorization: `Bearer ${user!.token}` } });
       setBoards(await res.json());
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this board?")) return;
-    await fetch(`http://localhost:5000/api/boards/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${user!.token}` } });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/boards/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${user!.token}` } });
     setBoards(p => p.filter(b => b._id !== id));
   };
 
