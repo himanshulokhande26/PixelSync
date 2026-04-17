@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --accent: #7c3aed;
+    --accent-light: #8b5cf6;
+    --accent-dim: rgba(124, 58, 237, 0.12);
+    --accent-border: rgba(124, 58, 237, 0.3);
+    --accent-glow: rgba(124, 58, 237, 0.35);
+  }
+
+  body {
+    font-family: var(--font-inter), system-ui, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .font-mono {
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  }
+}
+
+/* Light Mode — warm cream, easy on the eyes */
+html.light body  { background-color: #fafafa; color: #1c1917; }
+html:not(.dark) body { background-color: #fafafa; color: #1c1917; }
+
+/* Dark Mode */
+html.dark body { background-color: #050505; color: #e2e8f0; }
+
+@layer utilities {
+  .glow-violet { box-shadow: 0 0 20px rgba(124,58,237,0.3), 0 0 60px rgba(124,58,237,0.1); }
+  .glow-violet-text { text-shadow: 0 0 24px rgba(139,92,246,0.7); }
+}
