@@ -121,6 +121,7 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   const lastClickRef = useRef<{ time: number; x: number; y: number }>({ time: 0, x: 0, y: 0 });
   const lastCenter = useRef<{x: number, y: number} | null>(null);
   const lastDist = useRef<number>(0);
+  const isPinching = useRef(false);
 
   const transformerRef = useRef<any>(null);
   const stageRef = useRef<any>(null);
@@ -248,6 +249,15 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
     const touch2 = e.evt.touches[1];
 
     if (touch1 && touch2) {
+      // Two fingers — pinch/zoom. Cancel any active drawing stroke immediately.
+      isPinching.current = true;
+      if (isDrawing && activeElementId) {
+        // Remove the accidental stroke started by the first finger
+        deleteElements([activeElementId]);
+        setIsDrawing(false);
+        setActiveElementId(null);
+      }
+
       const stage = e.target.getStage();
       if (!stage) return;
       if (stage.isDragging()) stage.stopDrag();
@@ -268,7 +278,6 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
 
       if (!lastDist.current) lastDist.current = dist;
 
-      // Calculate new scale
       const pointTo = {
         x: (newCenter.x - stage.x()) / stage.scaleX(),
         y: (newCenter.y - stage.y()) / stage.scaleX(),
@@ -277,7 +286,6 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
       const scale = stage.scaleX() * (dist / lastDist.current);
       const newScale = Math.max(0.1, Math.min(scale, 5));
 
-      // Calculate panning offsets
       const dx = newCenter.x - lastCenter.current.x;
       const dy = newCenter.y - lastCenter.current.y;
 
@@ -291,9 +299,13 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
       lastDist.current = dist;
       lastCenter.current = newCenter;
     }
-  }, [setCamera]);
+  }, [setCamera, isDrawing, activeElementId, deleteElements]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: any) => {
+    // Only clear pinch state when ALL fingers are lifted
+    if (e.evt.touches.length === 0) {
+      isPinching.current = false;
+    }
     lastDist.current = 0;
     lastCenter.current = null;
   }, []);
@@ -313,7 +325,13 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   };
 
   const handlePointerDown = (e: any) => {
-    if (e.evt.button !== 0) return; // Only allow left clicks
+    if (e.evt.button !== 0 && e.evt.pointerType !== "touch") return;
+    // Block drawing if 2+ fingers are on screen (pinch gesture)
+    if (e.evt.touches && e.evt.touches.length > 1) {
+      isPinching.current = true;
+      return;
+    }
+    if (isPinching.current) return;
     if (tool === "pan" || editingTextId) return;
     const stage = e.target.getStage();
     const pos = stage.getRelativePointerPosition();
@@ -418,6 +436,9 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   };
 
   const handlePointerMove = (e: any) => {
+    // Don't track drawing during pinch
+    if (isPinching.current) return;
+    if (e.evt.touches && e.evt.touches.length > 1) return;
     const stage = e.target.getStage();
     const pos = stage.getRelativePointerPosition();
     emitCursorMove(pos.x, pos.y);
@@ -458,6 +479,12 @@ export function Canvas({ boardId, userName, boardType }: CanvasProps) {
   };
 
   const handlePointerUp = (e: any) => {
+    // Don't finalize a stroke if we were pinching
+    if (isPinching.current) {
+      setIsDrawing(false);
+      setActiveElementId(null);
+      return;
+    }
     if (selectionBox.visible) {
       const selBox = { left: selectionBox.x, right: selectionBox.x + selectionBox.width, top: selectionBox.y, bottom: selectionBox.y + selectionBox.height };
       const newSelections = elements.filter(el => {

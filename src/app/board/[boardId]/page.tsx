@@ -196,7 +196,8 @@ export default function BoardPage({ params }: { params: Promise<{ boardId: strin
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#fafafa] dark:bg-[#050505] transition-colors duration-200">
+    <div className="relative w-full overflow-hidden bg-[#fafafa] dark:bg-[#050505] transition-colors duration-200"
+      style={{ height: "100dvh", touchAction: "none" }}>
       {!hasJoined && <NamePrompt onJoin={name => { setUserName(name); setHasJoined(true); }} />}
 
       {hasJoined && (
