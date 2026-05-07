@@ -11,6 +11,9 @@ export function OvalNode({ id, data, selected }: NodeProps) {
 
   const color = (data.color as string) || "#7c3aed";
   const textColor = (data.textColor as string) || "#ede9fe";
+  const elFontSize = (data.fontSize as number) || 14;
+  const elFontWeight = data.fontBold ? "bold" : "normal";
+  const elFontStyle = data.fontItalic ? "italic" : "normal";
   const fill = color + "22";
   const fillHover = color + "38";
   const shadow = selected ? `0 0 0 4px ${color}44, 0 8px 32px ${color}33` : "none";
@@ -54,10 +57,10 @@ export function OvalNode({ id, data, selected }: NodeProps) {
             if (e.key === "Escape") setEditing(false);
           }}
           className="bg-transparent outline-none resize-none text-center pointer-events-auto"
-          style={{ width: "90%", height: "90%", fontSize: 13, fontFamily: "Inter, sans-serif", color: textColor, lineHeight: 1.4 }}
+          style={{ width: "90%", height: "90%", fontSize: elFontSize, fontWeight: elFontWeight, fontStyle: elFontStyle, fontFamily: "Inter, sans-serif", color: textColor, lineHeight: 1.4 }}
         />
       ) : (
-        <span style={{ fontSize: 13, fontFamily: "Inter, sans-serif", color: textColor, textAlign: "center", userSelect: "none", lineHeight: 1.4, padding: "0 10px" }}>
+        <span style={{ fontSize: elFontSize, fontWeight: elFontWeight, fontStyle: elFontStyle, fontFamily: "Inter, sans-serif", color: textColor, textAlign: "center", userSelect: "none", lineHeight: 1.4, padding: "0 10px" }}>
           {label}
         </span>
       )}

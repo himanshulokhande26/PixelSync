@@ -238,11 +238,12 @@ export function Toolbar({ boardType = "canvas" }: { boardType?: "canvas" | "flow
   const showTextFormat = tool === "text" || (boardType === "flowchart" && ["rectangle", "circle", "diamond", "oval"].includes(tool));
 
   return (
-    <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse items-center gap-2 w-full max-w-[calc(100vw-2rem)] sm:max-w-none sm:w-auto">
+    <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col items-center gap-1.5 pb-3 sm:pb-6"
+      style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}>
 
       {/* ── Text Formatting Bar ── */}
       {showTextFormat && (
-        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-1 duration-150">
+        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-1 duration-150 px-2">
           <div className="flex items-center gap-1 px-2 py-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg relative">
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
             <FontSizeDropdown value={fontSize} onChange={setFontSize} />
@@ -261,85 +262,87 @@ export function Toolbar({ boardType = "canvas" }: { boardType?: "canvas" | "flow
         </div>
       )}
 
-      {/* ── Main Row ── */}
-      <div className="flex items-center gap-2 flex-wrap justify-center">
+      {/* ── Main Row — horizontally scrollable on mobile ── */}
+      <div className="w-full overflow-x-auto scrollbar-none px-2">
+        <div className="flex items-center gap-2 justify-center min-w-max mx-auto">
 
-        {/* Tools container */}
-        <div className="flex items-center p-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-[0_4px_24px_rgba(0,0,0,0.8)] relative flex-shrink-0">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+          {/* Tools container */}
+          <div className="flex items-center p-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-[0_4px_24px_rgba(0,0,0,0.8)] relative flex-shrink-0">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
 
-          {activeTools.map((t, i) => (
-            <div key={t.id} className="flex items-center">
-              {i === dividerIndex && <div className="w-px h-5 bg-slate-200 dark:bg-white/10 mx-1" />}
-              <div className="group relative">
-                <button onClick={() => setTool(t.id)}
-                  title={`${t.label} [${t.shortcut}]`}
-                  className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 rounded-sm ${
-                    tool === t.id
-                      ? "bg-violet-500/15 border border-violet-500 text-violet-600 dark:text-violet-400 shadow-[inset_0_0_10px_rgba(124,58,237,0.15)]"
-                      : "border border-transparent text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200"
-                  }`}>
-                  {t.icon}
-                </button>
-                {/* Tooltip above */}
-                <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-slate-900 dark:bg-black border border-white/10 text-violet-300 font-mono text-[10px] font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg hidden sm:block z-50">
-                  {t.label} <span className="text-slate-500 ml-1">[{t.shortcut}]</span>
+            {activeTools.map((t, i) => (
+              <div key={t.id} className="flex items-center">
+                {i === dividerIndex && <div className="w-px h-5 bg-slate-200 dark:bg-white/10 mx-1" />}
+                <div className="group relative">
+                  <button onClick={() => setTool(t.id)}
+                    title={`${t.label} [${t.shortcut}]`}
+                    className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 rounded-sm ${
+                      tool === t.id
+                        ? "bg-violet-500/15 border border-violet-500 text-violet-600 dark:text-violet-400 shadow-[inset_0_0_10px_rgba(124,58,237,0.15)]"
+                        : "border border-transparent text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200"
+                    }`}>
+                    {t.icon}
+                  </button>
+                  {/* Tooltip above */}
+                  <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-slate-900 dark:bg-black border border-white/10 text-violet-300 font-mono text-[10px] font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg hidden sm:block z-50">
+                    {t.label} <span className="text-slate-500 ml-1">[{t.shortcut}]</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {/* Shapes popover — canvas only */}
-          {boardType === "canvas" && (
-            <>
-              <div className="w-px h-5 bg-slate-200 dark:bg-white/10 mx-1" />
-              <ShapesPopover activeTool={tool} onSelect={setTool} />
-            </>
-          )}
-        </div>
-
-        {/* ── Color + text color palettes ── */}
-        {isDrawingTool && (
-          <div className="flex items-center gap-2 flex-wrap justify-center animate-in fade-in zoom-in-95 duration-150">
-
-            {/* Stroke color swatches */}
-            <div className="flex items-center px-2 py-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg gap-1.5 relative">
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
-              {COLORS.map((color) => (
-                <button key={color} onClick={() => setStrokeColor(color)}
-                  className={`w-5 h-5 transition-all duration-100 flex-shrink-0 ${strokeColor === color ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-black ring-violet-500 scale-110" : "hover:scale-110 opacity-75 hover:opacity-100"}`}
-                  style={{ backgroundColor: color, border: color === "#ffffff" ? "1px solid #e2e8f0" : color === "#0f0f0f" ? "1px solid #374151" : "none" }}
-                  title={color} />
-              ))}
-              <button onClick={() => colorInputRef.current?.click()}
-                className="w-5 h-5 border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-violet-500 text-slate-400 hover:text-violet-500 hover:scale-110 transition-all bg-white dark:bg-black text-[10px] font-bold flex-shrink-0"
-                style={!COLORS.includes(strokeColor) ? { backgroundColor: strokeColor } : {}}>+</button>
-              <input ref={colorInputRef} type="color" value={strokeColor} onChange={(e) => setStrokeColor(e.target.value)} className="absolute opacity-0 w-0 h-0 pointer-events-none" />
-            </div>
-
-            {/* Text color swatches — for shapes & text tools */}
-            {["rectangle", "circle", "diamond", "oval", "text", "arrow", "triangle", "star", "hexagon"].includes(tool) && (
-              <div className="flex items-center px-2 py-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg gap-1.5 relative">
-                <Type size={12} className="text-slate-400 mr-0.5 flex-shrink-0" />
-                {COLORS.map((color) => (
-                  <button key={`text-${color}`} onClick={() => setTextColor(color)}
-                    className={`w-4 h-4 transition-all duration-100 flex-shrink-0 ${textColor === color ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-black ring-violet-500 scale-110" : "hover:scale-110 opacity-75 hover:opacity-100"}`}
-                    style={{ backgroundColor: color, border: color === "#ffffff" ? "1px solid #e2e8f0" : color === "#0f0f0f" ? "1px solid #374151" : "none", borderRadius: "2px" }}
-                    title={`Text: ${color}`} />
-                ))}
-                <button onClick={() => textColorInputRef.current?.click()}
-                  className="w-4 h-4 border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-violet-500 text-slate-400 hover:text-violet-500 hover:scale-110 transition-all text-[9px] font-bold"
-                  style={!COLORS.includes(textColor) ? { backgroundColor: textColor } : {}}>+</button>
-                <input ref={textColorInputRef} type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="absolute opacity-0 w-0 h-0 pointer-events-none" />
-              </div>
-            )}
-
-            {/* Brush size — canvas freehand only */}
-            {boardType !== "flowchart" && tool === "pencil" && (
-              <BrushSizeDropdown value={strokeWidth} onChange={setStrokeWidth} color={strokeColor} />
+            {/* Shapes popover — canvas only */}
+            {boardType === "canvas" && (
+              <>
+                <div className="w-px h-5 bg-slate-200 dark:bg-white/10 mx-1" />
+                <ShapesPopover activeTool={tool} onSelect={setTool} />
+              </>
             )}
           </div>
-        )}
+
+          {/* ── Color + text color palettes ── */}
+          {isDrawingTool && (
+            <div className="flex items-center gap-2 flex-wrap justify-center animate-in fade-in zoom-in-95 duration-150">
+
+              {/* Stroke color swatches */}
+              <div className="flex items-center px-2 py-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg gap-1.5 relative">
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+                {COLORS.map((color) => (
+                  <button key={color} onClick={() => setStrokeColor(color)}
+                    className={`w-5 h-5 transition-all duration-100 flex-shrink-0 ${strokeColor === color ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-black ring-violet-500 scale-110" : "hover:scale-110 opacity-75 hover:opacity-100"}`}
+                    style={{ backgroundColor: color, border: color === "#ffffff" ? "1px solid #e2e8f0" : color === "#0f0f0f" ? "1px solid #374151" : "none" }}
+                    title={color} />
+                ))}
+                <button onClick={() => colorInputRef.current?.click()}
+                  className="w-5 h-5 border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-violet-500 text-slate-400 hover:text-violet-500 hover:scale-110 transition-all bg-white dark:bg-black text-[10px] font-bold flex-shrink-0"
+                  style={!COLORS.includes(strokeColor) ? { backgroundColor: strokeColor } : {}}>+</button>
+                <input ref={colorInputRef} type="color" value={strokeColor} onChange={(e) => setStrokeColor(e.target.value)} className="absolute opacity-0 w-0 h-0 pointer-events-none" />
+              </div>
+
+              {/* Text color swatches — for shapes & text tools */}
+              {["rectangle", "circle", "diamond", "oval", "text", "arrow", "triangle", "star", "hexagon"].includes(tool) && (
+                <div className="flex items-center px-2 py-1 bg-white/95 dark:bg-black/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg gap-1.5 relative">
+                  <Type size={12} className="text-slate-400 mr-0.5 flex-shrink-0" />
+                  {COLORS.map((color) => (
+                    <button key={`text-${color}`} onClick={() => setTextColor(color)}
+                      className={`w-4 h-4 transition-all duration-100 flex-shrink-0 ${textColor === color ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-black ring-violet-500 scale-110" : "hover:scale-110 opacity-75 hover:opacity-100"}`}
+                      style={{ backgroundColor: color, border: color === "#ffffff" ? "1px solid #e2e8f0" : color === "#0f0f0f" ? "1px solid #374151" : "none", borderRadius: "2px" }}
+                      title={`Text: ${color}`} />
+                  ))}
+                  <button onClick={() => textColorInputRef.current?.click()}
+                    className="w-4 h-4 border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-violet-500 text-slate-400 hover:text-violet-500 hover:scale-110 transition-all text-[9px] font-bold"
+                    style={!COLORS.includes(textColor) ? { backgroundColor: textColor } : {}}>+</button>
+                  <input ref={textColorInputRef} type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="absolute opacity-0 w-0 h-0 pointer-events-none" />
+                </div>
+              )}
+
+              {/* Brush size — canvas freehand only */}
+              {boardType !== "flowchart" && tool === "pencil" && (
+                <BrushSizeDropdown value={strokeWidth} onChange={setStrokeWidth} color={strokeColor} />
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

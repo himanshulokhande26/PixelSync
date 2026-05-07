@@ -42,6 +42,9 @@ export function DiamondNode({ id, data, selected }: NodeProps) {
 
   const color       = (data.color as string) || "#7c3aed";
   const textColor   = (data.textColor as string) || "#ede9fe";
+  const elFontSize   = (data.fontSize as number) || 14;
+  const elFontWeight = data.fontBold ? "bold" : "normal";
+  const elFontStyle  = data.fontItalic ? "italic" : "normal";
   const borderColor = selected ? color + "cc" : color;
   const fillColor   = selected ? color + "30" : color + "1a";
 
@@ -112,7 +115,9 @@ export function DiamondNode({ id, data, selected }: NodeProps) {
             }}
             className="bg-transparent outline-none resize-none text-center pointer-events-auto w-full"
             style={{
-              fontSize: 13,
+              fontSize: elFontSize,
+              fontWeight: elFontWeight,
+              fontStyle: elFontStyle,
               fontFamily: "Inter, sans-serif",
               color: textColor,
               lineHeight: 1.4,
@@ -122,7 +127,9 @@ export function DiamondNode({ id, data, selected }: NodeProps) {
         ) : (
           <span
             style={{
-              fontSize: 13,
+              fontSize: elFontSize,
+              fontWeight: elFontWeight,
+              fontStyle: elFontStyle,
               fontFamily: "Inter, sans-serif",
               color: textColor,
               textAlign: "center",
